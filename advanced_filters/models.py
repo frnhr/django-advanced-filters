@@ -9,7 +9,8 @@ from .q_serializer import QSerializer
 class UserLookupManager(models.Manager):
     def filter_by_user(self, user):
         """All filters that should be displayed to a user (by users/group)"""
-
+        if not getattr(settings, "ADVANCED_FILTER_EDIT_BY_USER", True):
+            return self.all()
         return self.filter(Q(users=user) | Q(groups__in=user.groups.all()))
 
 
