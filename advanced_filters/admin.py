@@ -84,8 +84,8 @@ class AdminAdvancedFiltersMixin(object):
             'original_change_list_template':
                 self.original_change_list_template,
             'current_afilter': request.GET.get('_afilter'),
-            'natural_key': '{}.{}'.format(
-                self.opts.app_label, self.opts.model_name),
+            'model_label': self.opts.model._meta.label,
+            'model_name': self.opts.model._meta.label.split('.')[1],
         })
         return super(AdminAdvancedFiltersMixin, self).changelist_view(
             request, extra_context=extra_context)
@@ -128,7 +128,8 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
         path = resolve_url(
             'admin:{}_{}_changelist'.format(app, model.lower()))
         return mark_safe(
-            '<a href="{}" target="_top">{}</a>'.format(path, obj.model_name))
+            '<a href="{}?_afilter={}" target="_top">{}</a>'.format(
+                path, obj.id, obj.model_name))
     model_link.short_description = 'model'
     model_link.admin_order_field = 'model_name'
 

@@ -12,7 +12,7 @@
     <li>
         <div class="afilters">
             <a class="iframe-popup-link icons-object-tools-add-link"
-               href="{% url 'admin:advanced_filters_advancedfilter_add' %}?model={{ natural_key }}&_popup=iframe"
+               href="{% url 'admin:advanced_filters_advancedfilter_add' %}?model={{ model_label }}&_popup=iframe"
             >
                 {% trans "New Filter" %}
             </a>
@@ -21,6 +21,12 @@
                    href="{% url 'admin:advanced_filters_advancedfilter_change' current_afilter %}?_popup=iframe"
                 >
                     {% trans "Edit current filter" %}
+                </a>
+            {% else %}
+                <a class="iframe-popup-link icons-object-tools-add-link edit-link"
+                   href="{% url 'admin:advanced_filters_advancedfilter_changelist' %}?model_name={{ model_name }}&_popup=iframe"
+                >
+                    {% trans "Sort filters" %}
                 </a>
             {% endif %}
         </div>
