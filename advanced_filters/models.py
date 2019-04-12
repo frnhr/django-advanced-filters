@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils.six import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from .q_serializer import QSerializer
@@ -14,6 +15,7 @@ class UserLookupManager(models.Manager):
         return self.filter(Q(users=user) | Q(groups__in=user.groups.all()))
 
 
+@python_2_unicode_compatible
 class AdvancedFilter(models.Model):
     class Meta:
         verbose_name = _('Advanced Filter')
@@ -61,3 +63,6 @@ class AdvancedFilter(models.Model):
         s = QSerializer(base64=True)
         d = s.loads(self.b64_query, raw=True)
         return s.get_field_values_list(d)
+
+    def __str__(self):
+        return self.title
