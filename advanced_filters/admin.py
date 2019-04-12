@@ -1,5 +1,6 @@
 import logging
 
+from adminsortable2.admin import SortableAdminMixin
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR
@@ -88,7 +89,7 @@ class AdminAdvancedFiltersMixin(object):
             request, extra_context=extra_context)
 
 
-class AdvancedFilterAdmin(admin.ModelAdmin):
+class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
     model = AdvancedFilter
     form = AdvancedFilterForm
     extra = 0

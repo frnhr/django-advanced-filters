@@ -20,6 +20,7 @@ class AdvancedFilter(models.Model):
     class Meta:
         verbose_name = _('Advanced Filter')
         verbose_name_plural = _('Advanced Filters')
+        ordering = ('order',)
 
     title = models.CharField(max_length=255, null=False, blank=False, verbose_name=_('Title'))
     created_by = models.ForeignKey(
@@ -40,6 +41,7 @@ class AdvancedFilter(models.Model):
     model_name = models.CharField(
         max_length=64, blank=True, null=True, verbose_name='model',
         editable=False)
+    order = models.PositiveIntegerField(default=0)
 
     @property
     def query(self):
