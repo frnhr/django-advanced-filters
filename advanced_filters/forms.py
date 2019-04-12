@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import datetime as dt
 from pprint import pformat
 import logging
@@ -78,10 +79,9 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
         """
         Iterate over passed model fields tuple and update initial choices.
         """
-        return tuple(sorted(
-            [(fquery, capfirst(fname)) for fquery, fname in fields.items()],
-            key=lambda f: f[1].lower())
-        ) + self.FIELD_CHOICES
+        return tuple([
+            (fquery, capfirst(fname)) for fquery, fname in fields.items()
+        ]) + self.FIELD_CHOICES
 
     def _build_query_dict(self, formdata=None):
         """
@@ -264,7 +264,7 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
         overwrite the field's verbose name with the given name for display
         purposes.
         """
-        model_fields = {}
+        model_fields = OrderedDict()
         for field in fields:
             if isinstance(field, tuple) and len(field) == 2:
                 field, verbose_name = field[0], field[1]
