@@ -55,6 +55,9 @@
                         var content = $(mfpResponse.data).find('#content');
                         content.addClass('white-popup');
                         mfpResponse.data = content;
+                    },
+                    close: function() {
+                        window.reloadFilters();
                     }
                 }
             });
@@ -62,6 +65,14 @@
                 $('.ajax-popup-link').magnificPopup('open');
             }
         });
+
+        window.reloadFilters = function() {
+            (function($) {
+                $('#changelist-form').fadeTo(200, 0.5);
+                $('#changelist-filter > *:not(h2)').fadeTo(200, 0.2);
+                $('#changelist-filter').load(window.location.href + ' #changelist-filter > *');
+            })(django.jQuery);
+        };
     </script>
 
 {#    {% include "admin/common_js_init.html" with formset=formset %}#}

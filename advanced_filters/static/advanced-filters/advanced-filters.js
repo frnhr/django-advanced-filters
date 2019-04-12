@@ -167,8 +167,8 @@ var OperatorHandlers = function($) {
 	$(document).ready(function() {
 		if (!_af_handlers) {
 			_af_handlers = new OperatorHandlers($);
-			_af_handlers.destroy()
+			_af_handlers.destroy();
 			_af_handlers.init();
 		}
 	});
-})(window._jq || jQuery);
+})(django.jQuery || window._jq || jQuery);

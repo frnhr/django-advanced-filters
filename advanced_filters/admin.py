@@ -1,11 +1,11 @@
 import logging
 
 from adminsortable2.admin import SortableAdminMixin
+from django.apps import apps
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote, quote
-from django.contrib.contenttypes.models import ContentType
 from django.forms import Media
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
@@ -137,8 +137,7 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
         form = super(AdvancedFilterAdmin, self).get_form(
             request, obj, change, **kwargs)
         if 'model' in request.GET:
-            form.model = ContentType.objects.get_by_natural_key(
-                *request.GET['model'].split('.')).model_class()
+            form.model = apps.get_model(*request.GET['model'].split('.'))
         return form
 
     def save_model(self, request, new_object, *args, **kwargs):
