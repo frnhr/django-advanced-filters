@@ -9,6 +9,7 @@ from django.contrib.admin.utils import unquote, quote
 from django.forms import Media
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -80,10 +81,13 @@ class AdminAdvancedFiltersMixin(object):
     def changelist_view(self, request, extra_context=None):
         """Add advanced_filters form to changelist context"""
         extra_context = extra_context or {}
+        current_afilter = request.GET.get('_afilter')
+        if not AdvancedFilter.objects.filter(id=current_afilter).exists():
+            current_afilter = False
         extra_context.update({
             'original_change_list_template':
                 self.original_change_list_template,
-            'current_afilter': request.GET.get('_afilter'),
+            'current_afilter': current_afilter,
             'model_label': self.opts.model._meta.label,
             'model_name': self.opts.model._meta.label.split('.')[1],
         })
@@ -173,6 +177,19 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
                     path=path, qparams="?_afilter={id}".format(id=object_id))
                 return HttpResponseRedirect(url)
         return orig_response
+
+    def response_delete(self, request, obj_display, obj_id):
+        """
+        Determine the HttpResponse for the delete_view stage.
+        """
+        opts = self.model._meta
+        if request.GET.get(IS_POPUP_VAR) == 'iframe':
+            return TemplateResponse(request, self.popup_response_template or [
+                'admin/%s/%s/iframe_response.html' % (opts.app_label, opts.model_name),
+                'admin/%s/iframe_response.html' % opts.app_label,
+                'admin/iframe_response.html',
+            ], {})
+        return super().response_delete(request, obj_display, obj_id)
 
     def response_add(self, request, obj):
         """

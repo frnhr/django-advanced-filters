@@ -16,7 +16,7 @@
             >
                 {% trans "New Filter" %}
             </a>
-            {% if '_afilter' in request.GET %}
+            {% if current_afilter %}
                 <a class="iframe-popup-link icons-object-tools-add-link edit-link"
                    href="{% url 'admin:advanced_filters_advancedfilter_change' current_afilter %}?_popup=iframe"
                 >
@@ -69,8 +69,13 @@
         window.reloadFilters = function() {
             (function($) {
                 $('#changelist-form').fadeTo(200, 0.5);
-                $('#changelist-filter > *:not(h2)').fadeTo(200, 0.2);
-                $('#changelist-filter').load(window.location.href + ' #changelist-filter > *');
+                $('#changelist-filter > *').fadeTo(200, 0.2);
+                $('#content-main .object-tools .afilters > *').fadeTo(200, 0.2);
+                $('#changelist-filter').load(window.location.href, function(content) {
+                    var $content = $(content);
+                    $('#changelist-filter').html($content.find('#changelist-filter')[0].innerHTML);
+                    $('#content-main .object-tools .afilters').html($content.find('#content-main .object-tools .afilters')[0].innerHTML);
+                } );
             })(django.jQuery);
         };
     </script>

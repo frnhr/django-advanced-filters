@@ -6,8 +6,7 @@
 
             {% if original.pk %}
                 <p class="deletelink-box">
-                    <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}"
-                       target="_top"
+                    <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}{% if is_iframe %}?_popup=iframe{% endif %}"
                        class="deletelink"
                     >
                         {% trans "Delete" %}
