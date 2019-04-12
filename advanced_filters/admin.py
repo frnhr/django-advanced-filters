@@ -54,6 +54,8 @@ class AdminAdvancedFiltersMixin(object):
     """ Generic AdvancedFilters mixin """
     advanced_change_list_template = "admin/advanced_filters.html"
 
+    advanced_filter_fields = ()
+
     @property
     def media(self):
         return super().media + Media(
