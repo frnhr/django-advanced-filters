@@ -37,6 +37,9 @@ class AdvancedFilter(models.Model):
 
     b64_query = models.CharField(max_length=2048)
     model = models.CharField(max_length=64, blank=True, null=True)
+    model_name = models.CharField(
+        max_length=64, blank=True, null=True, verbose_name='model',
+        editable=False)
 
     @property
     def query(self):

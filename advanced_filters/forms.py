@@ -11,10 +11,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.utils import get_fields_from_path
 from django.db.models import Q, FieldDoesNotExist
-from django.db.models.fields import DateField
 from django.forms.formsets import formset_factory, BaseFormSet
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+# noinspection PyUnresolvedReferences
 from django.utils.six.moves import range, reduce
 from django.utils.text import capfirst
 
@@ -92,7 +92,7 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
             formdata = self.cleaned_data
         key = "{field}__{operator}".format(**formdata)
         if formdata['operator'] == "isnull":
-            return {key: None}
+            return {key: True}
         elif formdata['operator'] == "istrue":
             return {formdata['field']: True}
         elif formdata['operator'] == "isfalse":
@@ -104,9 +104,9 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
         """
         Take a list of query field dict and return data for form initialization
         """
-        operator = 'iexact'
+        operator_ = 'iexact'
         if query_data['field'] == '_OR':
-            query_data['operator'] = operator
+            query_data['operator'] = operator_
             return query_data
 
         parts = query_data['field'].split('__')
@@ -115,7 +115,7 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
         else:
             if parts[-1] in dict(AdvancedFilterQueryForm.OPERATORS).keys():
                 field = '__'.join(parts[:-1])
-                operator = parts[-1]
+                operator_ = parts[-1]
             else:
                 field = query_data['field']
 
@@ -124,8 +124,8 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
         if not mfield:
             raise Exception('Field path "%s" could not be followed to a field'
                             ' in model %s', query_data['field'], model)
-        else:
-            mfield = mfield[-1]  # get the field object
+        # else:
+        #     mfield = mfield[-1]  # get the field object
 
         if query_data['value'] is None:
             query_data['operator'] = "isnull"
@@ -135,7 +135,7 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
             query_data['operator'] = "isfalse"
         else:
             if not query_data.get('operator') == 'range':
-                query_data['operator'] = operator  # default
+                query_data['operator'] = operator_  # default
         if isinstance(query_data.get('value'),
                       list) and query_data['operator'] == 'range':
             date_from = date_to_string(query_data.get('value_from'))
@@ -167,8 +167,11 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
     def clean_value(self):
         value = self.cleaned_data['value']
         op = self.cleaned_data.get('operator', '')
-        list = ['istrue', 'isfalse', 'isnull']
-        if op not in list:
+        field = self.cleaned_data.get('field', '')
+        if field == '_OR':
+            return None
+        optional_ops = ['istrue', 'isfalse', 'isnull']
+        if op not in optional_ops:
             self.fields['value'].required = True
             return self.fields['value'].clean(value)
         return value
@@ -183,7 +186,8 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
             query = query & Q(**query_dict)
         return query
 
-    def __init__(self, model_fields={}, *args, **kwargs):
+    def __init__(self, model_fields=None, *args, **kwargs):
+        model_fields = model_fields or {}
         super(AdvancedFilterQueryForm, self).__init__(*args, **kwargs)
         self.FIELD_CHOICES = self._build_field_choices(model_fields)
         self.fields['field'].choices = self.FIELD_CHOICES
@@ -211,10 +215,10 @@ class AdvancedFilterFormSet(BaseFormSet):
     @cached_property
     def forms(self):
         # override the original property to include `model_fields` argument
-        forms = [self._construct_form(i, model_fields=self.model_fields)
+        forms_ = [self._construct_form(i, model_fields=self.model_fields)
                  for i in range(self.total_form_count())]
-        forms.append(self.empty_form)  # add initial empty form
-        return forms
+        forms_.append(self.empty_form)  # add initial empty form
+        return forms_
 
 
 AFQFormSet = formset_factory(
@@ -232,6 +236,9 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
         model = AdvancedFilter
         fields = ('title',)
 
+    model = None
+    _model = None
+
     class Media:
         required_js = [
             'admin/js/%sjquery.min.js' % ('vendor/jquery/' if USE_VENDOR_DIR else ''),
@@ -247,7 +254,8 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
             'magnific-popup/magnific-popup.css'
         ]}
 
-    def get_fields_from_model(self, model, fields):
+    @staticmethod
+    def get_fields_from_model(model, fields):
         """
         Iterate over given <field> names (in "orm query" notation) and find
         the actual field given the initial <model>.
@@ -258,50 +266,43 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
         """
         model_fields = {}
         for field in fields:
-                if isinstance(field, tuple) and len(field) == 2:
-                    field, verbose_name = field[0], field[1]
-                else:
-                    try:
-                        model_field = get_fields_from_path(model, field)[-1]
-                        verbose_name = model_field.verbose_name
-                    except (FieldDoesNotExist, IndexError, TypeError) as e:
-                        logger.warn("AdvancedFilterForm: skip invalid field "
-                                    "- %s", e)
-                        continue
-                model_fields[field] = verbose_name
+            if isinstance(field, tuple) and len(field) == 2:
+                field, verbose_name = field[0], field[1]
+            else:
+                try:
+                    model_field = get_fields_from_path(model, field)[-1]
+                    verbose_name = model_field.verbose_name
+                except (FieldDoesNotExist, IndexError, TypeError) as e:
+                    logger.warn("AdvancedFilterForm: skip invalid field "
+                                "- %s", e)
+                    continue
+            model_fields[field] = verbose_name
         return model_fields
 
-    def __init__(self, *args, **kwargs):
-        model_admin = kwargs.pop('model_admin', None)
-        instance = kwargs.get('instance')
-        extra_form = kwargs.pop('extra_form', False)
+    def __init__(self, data=None, files=None, instance=None, **kwargs):
         # TODO: allow all fields to be determined by model
         filter_fields = kwargs.pop('filter_fields', None)
-        if model_admin:
-            self._model = model_admin.model
+        if self.model:
+            self._model = self.model
         elif instance and instance.model:
-            # get existing instance model
             self._model = apps.get_model(*instance.model.split('.'))
-            try:
-                model_admin = admin.site._registry[self._model]
-            except KeyError:
-                logger.debug('No ModelAdmin registered for %s', self._model)
         else:
-            raise Exception('Adding new AdvancedFilter from admin is '
-                            'not supported')
-
+            raise Exception('AdvancedFilterForm initiated without model')
+        try:
+            model_admin = admin.site._registry[self._model]
+        except KeyError:
+            raise ValueError('No ModelAdmin registered for %s', self._model)
         self._filter_fields = filter_fields or getattr(
             model_admin, 'advanced_filter_fields', ())
 
-        super(AdvancedFilterForm, self).__init__(*args, **kwargs)
-
-        # populate existing or empty forms formset
-        data = None
-        if len(args):
-            data = args[0]
-        elif kwargs.get('data'):
-            data = kwargs.get('data')
+        super(AdvancedFilterForm, self).__init__(
+            data, files, instance=instance, **kwargs)
+        extra_form = not instance
         self.initialize_form(instance, self._model, data, extra_form)
+
+    @property
+    def model_label(self):
+        return self._model._meta.label
 
     def clean(self):
         cleaned_data = super(AdvancedFilterForm, self).clean()
@@ -342,7 +343,7 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
             query = reduce(operator.or_, ORed)
         return query
 
-    def initialize_form(self, instance, model, data=None, extra=None):
+    def initialize_form(self, instance, model, data=None, extra_inlines=False):
         """ Takes a "finalized" query and generate it's form data """
         model_fields = self.get_fields_from_model(model, self._filter_fields)
 
@@ -353,7 +354,7 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
                     AdvancedFilterQueryForm._parse_query_dict(
                         field_data, model))
 
-        formset = AFQFormSetNoExtra if not extra else AFQFormSet
+        formset = AFQFormSetNoExtra if not extra_inlines else AFQFormSet
         self.fields_formset = formset(
             data=data,
             initial=forms or None,

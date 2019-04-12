@@ -71,3 +71,13 @@
 .select2-container {
     min-width: 166px;
 }
+
+.object-tools li div.afilters a.icons-object-tools-add-link {
+	border-radius: 15px 0 0 15px;
+}
+.object-tools li div.afilters a.icons-object-tools-add-link:last-child {
+	border-radius: 15px;
+}
+.object-tools li div.afilters a.icons-object-tools-add-link.edit-link {
+	border-radius: 0 15px 15px 0;
+}

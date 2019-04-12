@@ -8,7 +8,8 @@
 {% endblock extrastyle %}
 
 {% block content %}
-	<form novalidate {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %}
+	<form novalidate {% if has_file_field %}enctype="multipart/form-data"{% endif %} action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form">{% csrf_token %}
+		{% block form_top %}{% endblock %}
 		{% with adminform.form.fields_formset as formset %}
 			<div id="advanced_filters">
 					{% csrf_token %}
@@ -30,9 +31,9 @@
 						</thead>
 						<tbody>
 							{% for form in formset %}
-								<tr class="form-row {% cycle "row1" "row2" %} {% if forloop.last %}empty-form{% endif %}" id="{{ formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+								<tr class="form-row {% cycle 'row1' 'row2' %} {% if forloop.last %}empty-form{% endif %}" id="{{ formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
 									{% for field in form.visible_fields %}
-										<td{% if field.field.name %} class="field-{{ field.field.name }}"{% endif %}>
+										<td {% if field.field.name %}class="field-{{ field.field.name }}"{% endif %}>
 											{{ field }}
 											{{ field.errors }}
 										</td>
@@ -45,8 +46,11 @@
 
 				<!-- Submit-Row -->
 				{% block submit_buttons_bottom %}
-					{% submit_row %}
-					<input method="POST" name="_save_goto" type="submit" value="{% trans "Save & Filter Now!" %}">
+                    {% if is_iframe %}
+					    {% include 'admin/advanced_filters/iframe_submit_line.html' %}
+                    {% else %}
+                        {% submit_row %}
+                    {% endif %}
 				{% endblock %}
 
 				<!-- JS for prepopulated fields -->
@@ -55,8 +59,8 @@
 
 				<script type="text/javascript" charset="utf-8">
 					// using django's original jquery, initial formset
-					var FORM_MODEL = '{% if adminform %}{{ adminform.form.instance.model }}{% endif %}';
-					var MODEL_LABEL = '{{ app_label }}.{{ opts.model_name }}';
+					window.FORM_MODEL = '{% if adminform %}{{ adminform.form.model_label }}{% endif %}';
+					window.MODEL_LABEL = '{{ app_label }}.{{ opts.model_name }}';
 				</script>
 
 				{% include "admin/common_js_init.html" with formset=formset %}
