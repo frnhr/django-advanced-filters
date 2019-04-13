@@ -1,3 +1,3 @@
 (function($) {
 	if (!window.jQuery)	window.jQuery = $;
-})(window._jq || jQuery || grp.jQuery);
+})(window._jq || jQuery || django.jQuery || grp.jQuery);

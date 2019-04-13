@@ -54,13 +54,13 @@ class AdvancedListFilters(admin.SimpleListFilter):
 class AdminAdvancedFiltersMixin(object):
     """ Generic AdvancedFilters mixin """
     advanced_change_list_template = "admin/advanced_filters.html"
-
     advanced_filter_fields = ()
 
     @property
     def media(self):
         return super().media + Media(
             js=[
+                'advanced-filters/jquery_adder.js',
                 'magnific-popup/jquery.magnific-popup.js',
                 'advanced-filters/advanced-filters.js',
             ],
