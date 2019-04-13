@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
@@ -71,3 +72,7 @@ class AdvancedFilter(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def model_class(self):
+        return apps.get_model(*self.model.split('.'))
