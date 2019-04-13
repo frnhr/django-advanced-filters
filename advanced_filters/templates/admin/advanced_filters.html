@@ -39,6 +39,7 @@
     <script type="text/javascript" charset="utf-8">
         window.FORM_MODEL = undefined;
         window.MODEL_LABEL = '{{ app_label }}.{{ opts.model_name }}';
+
         django.jQuery(function($){
             $.magnificPopup.instance._onFocusIn = function(e) {
                 // Do nothing if target element is select2 input
@@ -48,22 +49,27 @@
                 // Else call parent method
                 $.magnificPopup.proto._onFocusIn.call(this,e);
             };
-            $('.iframe-popup-link').magnificPopup({
-                type:'iframe',
-                callbacks: {
-                    parseAjax: function (mfpResponse) {
-                        var content = $(mfpResponse.data).find('#content');
-                        content.addClass('white-popup');
-                        mfpResponse.data = content;
-                    },
-                    close: function() {
-                        window.reloadFilters();
+
+            window.bindMagicPopupLinks = function() {
+                $('.iframe-popup-link').magnificPopup({
+                    type:'iframe',
+                    callbacks: {
+                        parseAjax: function (mfpResponse) {
+                            var content = $(mfpResponse.data).find('#content');
+                            content.addClass('white-popup');
+                            mfpResponse.data = content;
+                        },
+                        close: function() {
+                            window.reloadFilters();
+                        }
                     }
+                });
+                if ($(".errorlist", "#advanced_filters").length) {
+                    $('.ajax-popup-link').magnificPopup('open');
                 }
-            });
-            if ($(".errorlist", "#advanced_filters").length) {
-                $('.ajax-popup-link').magnificPopup('open');
-            }
+            };
+
+            window.bindMagicPopupLinks();
         });
 
         window.reloadFilters = function() {
@@ -75,7 +81,8 @@
                     var $content = $(content);
                     $('#changelist-filter').html($content.find('#changelist-filter')[0].innerHTML);
                     $('#content-main .object-tools .afilters').html($content.find('#content-main .object-tools .afilters')[0].innerHTML);
-                } );
+                    window.bindMagicPopupLinks();
+                });
             })(django.jQuery);
         };
     </script>
