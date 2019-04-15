@@ -124,7 +124,7 @@ var OperatorHandlers = function($) {
 		var rows = $('[data-rules-formset] tr.form-row');
 		if (rows.length == 1 && rows.eq(0).hasClass('empty-form')) {
 			// if only 1 form and it's empty, add first extra formset
-			$('[data-rules-formset] .add-row a').click();
+			// $('[data-rules-formset] .add-row a').click();
 		}
 
 		$('.form-row select.query-operator').each(function() {

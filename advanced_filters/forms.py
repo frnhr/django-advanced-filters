@@ -296,7 +296,8 @@ class AdvancedFilterForm(CleanWhiteSpacesMixin, forms.ModelForm):
 
         super(AdvancedFilterForm, self).__init__(
             data, files, instance=instance, **kwargs)
-        extra_form = not instance
+        # extra_form = not instance
+        extra_form = False
         self.initialize_form(instance, self._model, data, extra_form)
 
     @property

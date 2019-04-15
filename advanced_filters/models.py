@@ -34,6 +34,7 @@ class AdvancedFilter(models.Model):
     url = models.CharField(max_length=255, null=False, blank=False, verbose_name=_('URL'))
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, verbose_name=_('Users'))
     groups = models.ManyToManyField('auth.Group', blank=True, verbose_name=_('Groups'))
+    heading = models.BooleanField(null=False, blank=True, default=False)
 
     objects = UserLookupManager()
 
@@ -71,7 +72,7 @@ class AdvancedFilter(models.Model):
         return s.get_field_values_list(d)
 
     def __str__(self):
-        return self.title
+        return f'{self.model_name} / {self.title}'
 
     @property
     def model_class(self):

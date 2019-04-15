@@ -81,3 +81,7 @@
 .object-tools li div.afilters a.icons-object-tools-add-link.edit-link {
 	border-radius: 0 15px 15px 0;
 }
+
+#changelist-filter h3 > a {
+	color: #666;
+}

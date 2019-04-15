@@ -1,0 +1,16 @@
+{% load i18n %}
+<h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+<ul>
+{% for choice in choices %}
+    {% if choice.heading %}
+        </ul><h3>
+        <a class="iframe-popup-link icons-object-tools-add-link edit-link" href="/admin/advanced_filters/advancedfilter/{{ choice.query_string }}/change/?_popup=iframe">
+            {{ choice.display }}
+        </a>
+        </h3><ul>
+    {% else %}
+        <li{% if choice.selected %} class="selected"{% endif %}>
+        <a href="{{ choice.query_string|iriencode }}" title="{{ choice.display }}">{{ choice.display }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>

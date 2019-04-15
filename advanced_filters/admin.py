@@ -24,9 +24,29 @@ logger = logging.getLogger('advanced_filters.admin')
 
 class AdvancedListFilters(admin.SimpleListFilter):
     """Allow filtering by stored advanced filters (selection by title)"""
-    title = _('Advanced filters')
-
+    title = _('Filters')
+    template = 'admin/advanced_filters/filter.html'
     parameter_name = '_afilter'
+
+    def choices(self, changelist):
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': _('All'),
+        }
+        for lookup, title, heading in self.lookup_choices:
+            if heading:
+                yield {
+                    'heading': True,
+                    'query_string': lookup,
+                    'display': title,
+                }
+            else:
+                yield {
+                    'selected': self.value() == str(lookup),
+                    'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                    'display': title,
+                }
 
     def lookups(self, request, model_admin):
         if not model_admin:
@@ -35,7 +55,7 @@ class AdvancedListFilters(admin.SimpleListFilter):
         model_name = "%s.%s" % (model_admin.model._meta.app_label,
                                 model_admin.model._meta.object_name)
         return AdvancedFilter.objects.filter_by_user(request.user).filter(
-            model=model_name).values_list('id', 'title')
+            model=model_name).values_list('id', 'title', 'heading')
 
     def queryset(self, request, queryset):
         if self.value():
@@ -76,7 +96,8 @@ class AdminAdvancedFiltersMixin(object):
             self.change_list_template or "admin/change_list.html")
         self.change_list_template = self.advanced_change_list_template
         # add list filters to filters
-        self.list_filter = (AdvancedListFilters,) + tuple(self.list_filter)
+        # self.list_filter = (AdvancedListFilters,) + tuple(self.list_filter)
+        self.list_filter = (AdvancedListFilters,)
 
     def changelist_view(self, request, extra_context=None):
         """Add advanced_filters form to changelist context"""
@@ -107,10 +128,12 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     fields = (
         'title',
+        'heading',
         'model_link',
     )
     iframe_fields = (
-        ('title', 'edit_link'),
+        'title',
+        'heading',
         'model_link',
     )
 
@@ -271,5 +294,16 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
             return super(AdvancedFilterAdmin, self).has_delete_permission(request)
         return self.user_has_permission(request.user) or obj in self.model.objects.filter_by_user(request.user)
 
+    def get_search_results(self, request, queryset, search_term):
+        results, use_distinct = super().get_search_results(
+            request, queryset, search_term)
+        if request.is_ajax():
+            new_results = []
+            for result in results.order_by('model_name', 'order'):
+                if not result.heading:
+                    new_results.append(result)
+        else:
+            new_results = results
+        return new_results, use_distinct
 
 admin.site.register(AdvancedFilter, AdvancedFilterAdmin)
