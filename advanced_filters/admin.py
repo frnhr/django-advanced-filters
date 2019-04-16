@@ -12,6 +12,7 @@ from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -28,12 +29,11 @@ class AdvancedListFilters(admin.SimpleListFilter):
     template = 'admin/advanced_filters/filter.html'
     parameter_name = '_afilter'
 
+    def __init__(self, request, params, model, model_admin):
+        super().__init__(request, params, model, model_admin)
+        self.request = request
+
     def choices(self, changelist):
-        yield {
-            'selected': self.value() is None,
-            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
-            'display': _('All'),
-        }
         for lookup, title, heading in self.lookup_choices:
             if heading:
                 yield {
@@ -69,6 +69,17 @@ class AdvancedListFilters(admin.SimpleListFilter):
             logger.debug(query.__dict__)
             return queryset.filter(query).distinct()
         return queryset
+
+    @property
+    def active(self):
+        return self.parameter_name in self.request.GET
+
+    @property
+    def clear_url(self):
+        params = dict(self.request.GET.items())
+        if self.parameter_name in params:
+            del params[self.parameter_name]
+        return '?%s' % urlencode(sorted(params.items()))
 
 
 class AdminAdvancedFiltersMixin(object):

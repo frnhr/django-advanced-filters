@@ -64,6 +64,11 @@
 	max-width: 800px;
 	margin: 20px auto;
 }
+body .mfp-wrap {
+	z-index: 10000000;
+}
+
+
 .empty-form {
 	display: none;
 }
@@ -84,4 +89,46 @@
 
 #changelist-filter h3 > a {
 	color: #666;
+}
+#changelist-filter h3 > a.filters-clear {
+	font-size: 80%;
+	display: inline-block;
+	float: right;
+	padding-top: 2px;
+	vertical-align: top;
+}
+
+#changelist-filter h2 + a.filters-clear {
+	float: right;
+    margin-top: -36px;
+    margin-right: 10px;
+    color: #FFF;
+}
+
+#changelist-filter h2 + a.filters-clear:hover {
+	text-decoration: underline;
+}
+
+
+/* overwrite default styles */
+body #changelist-filter ul {
+	padding: 0;
+	margin: 0;
+	border-bottom: none;
+}
+body #changelist-filter ul > li {
+	margin: 0 15px;
+}
+body #changelist-filter ul > li:last-child {
+	border-bottom: 1px solid #eaeaea;
+	margin-bottom: 10px;
+	padding-bottom: 15px;
+}
+body #changelist-filter ul:last-child > li:last-child {
+	border-bottom: none;
+}
+
+
+body #changelist-filter ul > li.selected {
+	margin-left: 0;
 }

@@ -1,5 +1,9 @@
 {% load i18n %}
-<h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+
+{% if spec.active %}
+    <a href="{{ spec.clear_url }}" class="filters-clear">Clear</a>
+{% endif %}
+
 <ul>
 {% for choice in choices %}
     {% if choice.heading %}
