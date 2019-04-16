@@ -107,8 +107,7 @@ class AdminAdvancedFiltersMixin(object):
             self.change_list_template or "admin/change_list.html")
         self.change_list_template = self.advanced_change_list_template
         # add list filters to filters
-        # self.list_filter = (AdvancedListFilters,) + tuple(self.list_filter)
-        self.list_filter = (AdvancedListFilters,)
+        self.list_filter = (AdvancedListFilters,) + tuple(self.list_filter)
 
     def changelist_view(self, request, extra_context=None):
         """Add advanced_filters form to changelist context"""

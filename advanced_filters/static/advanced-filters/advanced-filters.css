@@ -119,6 +119,15 @@ body #changelist-filter ul {
 body #changelist-filter ul > li {
 	margin: 0 15px;
 }
+body #changelist-filter ul > li.selected {
+	border-left: none;
+	padding-left: 15px;
+}
+body #changelist-filter ul > li.selected a {
+	border-left: 5px solid #eaeaea;
+	padding-left: 10px;
+	margin-left: -15px;
+}
 body #changelist-filter ul > li:last-child {
 	border-bottom: 1px solid #eaeaea;
 	margin-bottom: 10px;
@@ -131,4 +140,14 @@ body #changelist-filter ul:last-child > li:last-child {
 
 body #changelist-filter ul > li.selected {
 	margin-left: 0;
+}
+
+body #changelist-filter h2 {
+	margin-top: 15px;
+}
+body #changelist-filter h2:first-child {
+	margin-top: 0;
+}
+body #changelist-filter h2:last-child {
+	display: none;
 }
