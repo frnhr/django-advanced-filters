@@ -1,11 +1,17 @@
+import logging
+from functools import reduce
+
 from django.apps import apps
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.six import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from .q_serializer import QSerializer
+
+
+log = logging.getLogger(__name__)
 
 
 class UserLookupManager(models.Manager):
@@ -77,3 +83,11 @@ class AdvancedFilter(models.Model):
     @property
     def model_class(self):
         return apps.get_model(*self.model.split('.'))
+
+    def filter_queryset(self, queryset=None):
+        if queryset is None:
+            queryset = self.model_class.objects.all()
+        query = self.query
+        log.debug(query.__dict__)
+        qs = [queryset.filter(child) for child in query.children]
+        return reduce(QuerySet.__and__, qs).distinct()

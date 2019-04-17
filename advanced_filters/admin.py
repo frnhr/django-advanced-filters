@@ -65,9 +65,7 @@ class AdvancedListFilters(admin.SimpleListFilter):
             if not advfilter:
                 logger.error("AdvancedListFilters.queryset: Invalid filter id")
                 return queryset
-            query = advfilter.query
-            logger.debug(query.__dict__)
-            return queryset.filter(query).distinct()
+            return advfilter.filter_queryset(queryset)
         return queryset
 
     @property
