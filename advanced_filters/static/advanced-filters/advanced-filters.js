@@ -135,7 +135,7 @@ var OperatorHandlers = function($) {
 				if ($(this).val() != before_change) self.modify_widget(this);
 				$(this).data('pre_change', $(this).val());
 			}).change();
-			// self.modify_widget(this);
+			self.modify_widget(this);
 		});
 		$('.form-row select.query-field').each(function() {
 			$(this).off("change");
