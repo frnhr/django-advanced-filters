@@ -132,17 +132,18 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'model_link',)
     list_filter = ('model_name',)
     search_fields = ('model_name', 'title',)
-    readonly_fields = ('model_link', 'edit_link',)
+    readonly_fields = ('model_link', 'usage_links', 'edit_link',)
 
     fields = (
         'title',
         'heading',
         'model_link',
+        'usage_links',
     )
     iframe_fields = (
         'title',
         'heading',
-        'model_link',
+        'usage_links',
     )
 
     def get_fields(self, request, obj=None):
@@ -168,6 +169,19 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
                 path, obj.id, obj.model_name))
     model_link.short_description = 'model'
     model_link.admin_order_field = 'model_name'
+
+    def usage_links(self, obj):
+        if not obj or not obj.id:
+            return '(new)'
+        out = []
+        for counter in obj.counters.all():
+            url = reverse(
+                'admin:admin_index_counter_change', args=(counter.id,))
+            out.append(
+                f'<a href="{url}" target="_blank">{counter}</a>')
+        out = out or ['(unused)']
+        return mark_safe('<br />\n'.join(out))
+    usage_links.short_description = 'Used'
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super(AdvancedFilterAdmin, self).get_form(
