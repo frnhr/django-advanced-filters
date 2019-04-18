@@ -129,7 +129,7 @@ class AdvancedFilterAdmin(SortableAdminMixin, admin.ModelAdmin):
     form = AdvancedFilterForm
     extra = 0
 
-    list_display = ('title', 'model_link',)
+    list_display = ('title', 'model_link', 'heading',)
     list_filter = ('model_name',)
     search_fields = ('model_name', 'title',)
     readonly_fields = ('model_link', 'usage_links', 'edit_link',)
