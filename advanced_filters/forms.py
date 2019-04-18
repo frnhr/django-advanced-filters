@@ -90,6 +90,8 @@ class AdvancedFilterQueryForm(CleanWhiteSpacesMixin, forms.Form):
         """
         if self.is_valid() and formdata is None:
             formdata = self.cleaned_data
+        if '|' in formdata['field']:
+            formdata['field'] = formdata['field'].split('|')[0]
         key = "{field}__{operator}".format(**formdata)
         if formdata['operator'] == "isnull":
             return {key: True}

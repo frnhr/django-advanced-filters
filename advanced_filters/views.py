@@ -35,6 +35,10 @@ class GetFieldChoices(CsrfExemptMixin, StaffuserRequiredMixin,
         app_label, model_name = model.split('.', 1)
         try:
             model_obj = apps.get_model(app_label, model_name)
+            try:
+                field_name, field_label = field_name.split('|', 1)
+            except ValueError:
+                field_name, field_label = field_name, None
             field = get_fields_from_path(model_obj, field_name)[-1]
             model_obj = field.model  # use new model if followed a ForeignKey
         except AttributeError as e:
@@ -61,11 +65,17 @@ class GetFieldChoices(CsrfExemptMixin, StaffuserRequiredMixin,
                              field, type(field))
             else:
                 # the order_by() avoids ambiguity with values() and distinct()
-                choices = model_obj.objects.order_by(field.name).values_list(
-                    field.name, flat=True).distinct()
+                if field_label:
+                    choices = model_obj.objects.order_by(field.name).values_list(
+                        field.name, field_label).distinct()
+                    count = choices.count()
+                else:
+                    choices = model_obj.objects.order_by(field.name).values_list(
+                        field.name, flat=True).distinct()
+                    choices = list(zip(choices, choices))
+                    count = len(choices)
                 # additional query is ok to avoid fetching too many values
-                if choices.count() <= max_choices:
-                    choices = zip(choices, choices)
+                if count <= max_choices:
                     logger.debug('Choices found for field %s: %s',
                                  field.name, choices)
                 else:
